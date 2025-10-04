@@ -59,13 +59,13 @@ export const getSessionTypeColor = (sessionType?: SessionType) => {
   const type = sessionType || 'pomodoro'
   switch (type) {
     case 'pomodoro':
-      return { color: '#ef4444' } // Red
+      return { color: '#f97316' } // Modern orange
     case 'short_break':
-      return { color: '#10b981' } // Green
+      return { color: '#06d6a0' } // Modern teal
     case 'long_break':
-      return { color: '#3b82f6' } // Blue
+      return { color: '#6366f1' } // Modern indigo
     default:
-      return { color: '#ef4444' }
+      return { color: '#f97316' }
   }
 }
 
@@ -83,7 +83,7 @@ export const getSessionTypeDisplay = (sessionType?: SessionType): string => {
   }
 }
 
-export const getDurationForSessionType = (sessionType: SessionType, settings?: any): number => {
+export const getDurationForSessionType = (sessionType: SessionType, settings?: { timer: { pomodoroTime: number; shortBreakTime: number; longBreakTime: number } }): number => {
   // Default values in seconds
   const defaults = {
     pomodoro: 25 * 60,

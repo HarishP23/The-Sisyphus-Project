@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { formatTime } from '@/lib/utils'
 
 interface FlipClockProps {
@@ -17,20 +17,60 @@ interface FlipDigitProps {
 
 const FlipDigit: React.FC<FlipDigitProps> = ({ digit, prevDigit, isFlipping }) => {
   return (
-    <div className="relative w-20 h-24 md:w-24 md:h-28 lg:w-28 lg:h-32">
+    <div className="relative w-24 h-32 md:w-28 md:h-36 lg:w-32 lg:h-40">
       <motion.div 
-        className="timer-digit w-full h-full flex items-center justify-center text-3xl md:text-4xl lg:text-5xl font-bold transition-all duration-500 bg-gradient-to-br from-slate-800 via-slate-900 to-black border border-slate-600 shadow-2xl"
+        className="timer-digit w-full h-full flex items-center justify-center text-4xl md:text-5xl lg:text-6xl font-bold transition-all duration-700 shadow-2xl"
         animate={{
-          scale: isFlipping ? [1, 0.95, 1] : 1,
-          rotateX: isFlipping ? [0, -10, 0] : 0
+          scale: isFlipping ? [1, 0.98, 1.02, 1] : 1,
+          rotateX: isFlipping ? [0, -15, 15, 0] : 0,
+          y: isFlipping ? [0, -2, 2, 0] : 0
         }}
-        transition={{ duration: 0.6, ease: "easeInOut" }}
+        transition={{ 
+          duration: 0.8, 
+          ease: [0.4, 0, 0.2, 1],
+          times: [0, 0.3, 0.7, 1]
+        }}
+        style={{
+          transformStyle: 'preserve-3d',
+        }}
       >
-        <span className="text-white drop-shadow-lg font-mono tracking-wider">
+        <motion.span 
+          className="relative font-mono tracking-tight drop-shadow-2xl"
+          animate={{
+            textShadow: isFlipping 
+              ? ["0 2px 4px rgba(0,0,0,0.3)", "0 4px 8px rgba(0,0,0,0.5)", "0 2px 4px rgba(0,0,0,0.3)"]
+              : "0 2px 4px rgba(0,0,0,0.3)"
+          }}
+          transition={{ duration: 0.8 }}
+        >
           {isFlipping ? digit : prevDigit}
-        </span>
-        {/* Shine overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent rounded-xl pointer-events-none" />
+        </motion.span>
+        
+        {/* Enhanced shine overlay */}
+        <motion.div 
+          className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent rounded-2xl pointer-events-none"
+          animate={{
+            opacity: isFlipping ? [0.2, 0.6, 0.2] : 0.2
+          }}
+          transition={{ duration: 0.8 }}
+        />
+        
+        {/* Glow effect when flipping */}
+        {isFlipping && (
+          <motion.div
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ 
+              opacity: [0, 0.3, 0],
+              boxShadow: [
+                "0 0 0px rgba(255,255,255,0)",
+                "0 0 20px rgba(255,255,255,0.3)",
+                "0 0 0px rgba(255,255,255,0)"
+              ]
+            }}
+            transition={{ duration: 0.8 }}
+          />
+        )}
       </motion.div>
     </div>
   )
@@ -38,12 +78,17 @@ const FlipDigit: React.FC<FlipDigitProps> = ({ digit, prevDigit, isFlipping }) =
 
 const ColonSeparator: React.FC = () => {
   return (
-    <div className="flex flex-col items-center justify-center h-24 md:h-28 lg:h-32 mx-3">
+    <div className="flex flex-col items-center justify-center h-32 md:h-36 lg:h-40 mx-4">
       <motion.div 
-        className="w-3 h-3 md:w-4 md:h-4 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full mb-3 shadow-lg"
+        className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 bg-gradient-to-br from-white to-white/80 rounded-full mb-4 shadow-2xl"
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.7, 1, 0.7]
+          scale: [1, 1.3, 1],
+          opacity: [0.8, 1, 0.8],
+          boxShadow: [
+            "0 4px 12px rgba(255,255,255,0.3)",
+            "0 6px 20px rgba(255,255,255,0.6)",
+            "0 4px 12px rgba(255,255,255,0.3)"
+          ]
         }}
         transition={{
           duration: 2,
@@ -52,10 +97,15 @@ const ColonSeparator: React.FC = () => {
         }}
       />
       <motion.div 
-        className="w-3 h-3 md:w-4 md:h-4 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full shadow-lg"
+        className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 bg-gradient-to-br from-white to-white/80 rounded-full shadow-2xl"
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.7, 1, 0.7]
+          scale: [1, 1.3, 1],
+          opacity: [0.8, 1, 0.8],
+          boxShadow: [
+            "0 4px 12px rgba(255,255,255,0.3)",
+            "0 6px 20px rgba(255,255,255,0.6)",
+            "0 4px 12px rgba(255,255,255,0.3)"
+          ]
         }}
         transition={{
           duration: 2,
@@ -105,21 +155,26 @@ export const FlipClock: React.FC<FlipClockProps> = ({ timeLeft, isRunning }) => 
   return (
     <motion.div 
       className="relative flex items-center justify-center space-x-2 select-none"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
+      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
     >
-      {/* Background glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 blur-3xl rounded-full" />
+      {/* Enhanced background glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/20 to-white/10 blur-3xl rounded-full" />
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-400/20 via-purple-400/20 to-pink-400/20 blur-2xl rounded-full animate-pulse" />
       
-      {/* Timer digits */}
-      <div className="relative z-10 flex items-center space-x-1">
+      {/* Timer digits container */}
+      <div className="relative z-10 flex items-center space-x-2 p-6 glass-card rounded-3xl">
         {timeDigits.map((digit, index) => (
           <motion.div 
             key={index}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: index * 0.1, duration: 0.5 }}
+            initial={{ y: 30, opacity: 0, rotateX: -90 }}
+            animate={{ y: 0, opacity: 1, rotateX: 0 }}
+            transition={{ 
+              delay: index * 0.15, 
+              duration: 0.8,
+              ease: [0.4, 0, 0.2, 1]
+            }}
           >
             {digit === ':' ? (
               <ColonSeparator />
@@ -134,20 +189,36 @@ export const FlipClock: React.FC<FlipClockProps> = ({ timeLeft, isRunning }) => 
         ))}
       </div>
       
-      {/* Pulse effect when running */}
+      {/* Enhanced pulse effect when running */}
       {isRunning && (
-        <motion.div
-          className="absolute inset-0 border-2 border-blue-400/30 rounded-2xl"
-          animate={{
-            scale: [1, 1.05, 1],
-            opacity: [0.3, 0.6, 0.3]
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
+        <>
+          <motion.div
+            className="absolute inset-0 border-2 border-white/20 rounded-3xl"
+            animate={{
+              scale: [1, 1.08, 1],
+              opacity: [0.2, 0.5, 0.2],
+              borderColor: ["rgba(255,255,255,0.2)", "rgba(255,255,255,0.4)", "rgba(255,255,255,0.2)"]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          <motion.div
+            className="absolute inset-0 border border-white/10 rounded-3xl"
+            animate={{
+              scale: [1, 1.12, 1],
+              opacity: [0.1, 0.3, 0.1]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1.5
+            }}
+          />
+        </>
       )}
     </motion.div>
   )
