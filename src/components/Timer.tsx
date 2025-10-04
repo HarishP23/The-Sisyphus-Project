@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Play, Pause, RotateCcw, SkipForward } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
+// import { Button } from '@/components/ui/button'
 import { FlipClock } from '@/components/FlipClock'
-import { useTimerStore, useSettingsStore, useTaskStore, useSessionStore } from '@/store'
-import { formatTimeForTitle, minutesToSeconds, getSessionTypeColor, getSessionTypeDisplay, getDurationForSessionType } from '@/lib/utils'
+import { useTimerStore, useTaskStore, useSessionStore } from '@/store'
+import { formatTimeForTitle, getSessionTypeColor, getSessionTypeDisplay, getDurationForSessionType } from '@/lib/utils'
 import { SessionType } from '@/types'
 import { useTimerSync } from '@/hooks/useTimerSync'
 
@@ -20,7 +20,7 @@ export const Timer: React.FC = () => {
     setTimerState, 
     incrementPomodoros,
     resetTimer,
-    skipSession,
+    // skipSession,
     getNextSessionType,
     setSessionType
   } = useTimerStore()
@@ -105,23 +105,30 @@ export const Timer: React.FC = () => {
   }
 
   const handleSessionTransition = (nextType: SessionType) => {
-    setSessionType(nextType)
+    // Add a brief pause for smooth transition
+    setTimerState('idle')
     
-    const newTime = getDurationForSessionType(nextType, settings)
-    setTimeLeft(newTime)
-    
-    // Auto-start logic
-    const shouldAutoStart = 
-      (nextType === 'pomodoro' && settings.timer.autoStartPomodoros) ||
-      (nextType !== 'pomodoro' && settings.timer.autoStartBreaks)
-    
-    if (shouldAutoStart) {
-      setTimerState('running')
-      setSessionStartTime(new Date())
-    } else {
-      setTimerState('idle')
-      setSessionStartTime(null)
-    }
+    setTimeout(() => {
+      setSessionType(nextType)
+      
+      const newTime = getDurationForSessionType(nextType, settings)
+      setTimeLeft(newTime)
+      
+      // Auto-start logic
+      const shouldAutoStart = 
+        (nextType === 'pomodoro' && settings.timer.autoStartPomodoros) ||
+        (nextType !== 'pomodoro' && settings.timer.autoStartBreaks)
+      
+      if (shouldAutoStart) {
+        setTimeout(() => {
+          setTimerState('running')
+          setSessionStartTime(new Date())
+        }, 300) // Small delay for smooth transition
+      } else {
+        setTimerState('idle')
+        setSessionStartTime(null)
+      }
+    }, 150) // Brief pause for visual transition
   }
 
   const handleStartPause = () => {
@@ -170,214 +177,312 @@ export const Timer: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
-      {/* Session Type Header with Gradient Badge */}
-      <div className="text-center space-y-3">
+    <div className="space-y-8 max-w-4xl mx-auto">
+      {/* Session Type Header with Modern Badge */}
+      <div className="text-center space-y-4">
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.3 }}
+          initial={{ scale: 0.8, opacity: 0, y: -20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="inline-block"
         >
           <div
-            className="inline-flex items-center px-6 py-2 rounded-full text-sm font-semibold shadow-lg"
+            className="session-badge inline-flex items-center px-8 py-4 text-lg font-bold tracking-wide shadow-2xl"
             style={{
-              background: `linear-gradient(135deg, ${getSessionTypeColor(sessionType).color}15, ${getSessionTypeColor(sessionType).color}30)`,
-              color: getSessionTypeColor(sessionType).color,
-              border: `2px solid ${getSessionTypeColor(sessionType).color}40`,
+              background: `linear-gradient(135deg, ${getSessionTypeColor(sessionType).color}20, ${getSessionTypeColor(sessionType).color}40)`,
+              color: 'white',
+              border: `2px solid ${getSessionTypeColor(sessionType).color}60`,
+              boxShadow: `0 8px 32px ${getSessionTypeColor(sessionType).color}30, 0 0 0 1px rgba(255,255,255,0.1) inset`,
             }}
           >
-            <span className="relative flex h-2 w-2 mr-2">
+            <motion.div
+              className="relative flex h-3 w-3 mr-3"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
               <span
                 className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
                 style={{ backgroundColor: getSessionTypeColor(sessionType).color }}
-              ></span>
+              />
               <span
-                className="relative inline-flex rounded-full h-2 w-2"
+                className="relative inline-flex rounded-full h-3 w-3"
                 style={{ backgroundColor: getSessionTypeColor(sessionType).color }}
-              ></span>
-            </span>
+              />
+            </motion.div>
             {getSessionTypeDisplay(sessionType)}
           </div>
         </motion.div>
 
-        <h2 className="text-xl font-medium text-muted-foreground">
-          Session <span className="font-bold text-foreground">#{completedPomodoros + 1}</span>
-        </h2>
+        <motion.h2 
+          className="text-2xl font-bold text-white/90"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          Session <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">#{completedPomodoros + 1}</span>
+        </motion.h2>
       </div>
 
-      {/* Current Task Display - Enhanced Card */}
+      {/* Current Task Display - Modern Glass Card */}
       {currentTask && (
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="relative bg-gradient-to-br from-card to-card/50 border-2 border-border rounded-2xl p-6 shadow-xl backdrop-blur-sm"
+          initial={{ y: 30, opacity: 0, scale: 0.95 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
+          className="relative glass-card p-8 shadow-2xl"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-2xl"></div>
-          <div className="relative space-y-3">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-3xl pointer-events-none" />
+          <div className="relative space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+              <motion.p 
+                className="text-sm uppercase tracking-widest text-white/70 font-bold"
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
                 Currently Working On
-              </p>
-              <div className="flex items-center space-x-1">
+              </motion.p>
+              <motion.div 
+                className="flex items-center space-x-2"
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
                 {[...Array(currentTask.estPomodoros)].map((_, i) => (
-                  <div
+                  <motion.div
                     key={i}
-                    className={`h-2 w-2 rounded-full transition-all ${
-                      i < currentTask.actPomodoros ? "bg-primary scale-110" : "bg-muted"
-                    }`}
-                    style={i < currentTask.actPomodoros ? { backgroundColor: getSessionTypeColor(sessionType).color } : {}}
+                    className={`progress-dot ${i < currentTask.actPomodoros ? 'active' : ''}`}
+                    style={{ 
+                      backgroundColor: i < currentTask.actPomodoros 
+                        ? getSessionTypeColor(sessionType).color 
+                        : 'rgba(255,255,255,0.3)' 
+                    }}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.7 + i * 0.1, type: "spring" }}
                   />
                 ))}
-              </div>
+              </motion.div>
             </div>
 
-            <p className="font-bold text-foreground text-xl leading-tight">{currentTask.title}</p>
+            <motion.h3 
+              className="font-bold text-white text-2xl leading-tight"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.8 }}
+            >
+              {currentTask.title}
+            </motion.h3>
 
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">
-                <span className="font-semibold text-foreground">{currentTask.actPomodoros}</span> of{" "}
-                <span className="font-semibold text-foreground">{currentTask.estPomodoros}</span> pomodoros completed
+            <motion.div 
+              className="flex items-center justify-between"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.9 }}
+            >
+              <span className="text-white/80 text-lg">
+                <span className="font-bold text-white text-xl">{currentTask.actPomodoros}</span> of{" "}
+                <span className="font-bold text-white text-xl">{currentTask.estPomodoros}</span> pomodoros completed
               </span>
-              <span
-                className="font-semibold px-3 py-1 rounded-full text-xs"
+              <div
+                className="font-bold px-4 py-2 rounded-2xl text-lg glass-card"
                 style={{
-                  backgroundColor: `${getSessionTypeColor(sessionType).color}15`,
+                  backgroundColor: `${getSessionTypeColor(sessionType).color}20`,
                   color: getSessionTypeColor(sessionType).color,
+                  border: `1px solid ${getSessionTypeColor(sessionType).color}40`,
                 }}
               >
                 {Math.round((currentTask.actPomodoros / currentTask.estPomodoros) * 100)}%
-              </span>
-            </div>
+              </div>
+            </motion.div>
           </div>
         </motion.div>
       )}
 
-      {/* Timer Display with Glow Effect */}
+      {/* Timer Display with Enhanced Effects */}
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="relative flex justify-center py-8"
+        initial={{ scale: 0.9, opacity: 0, y: 50 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{ delay: 1.0, duration: 1, ease: "easeOut" }}
+        className="relative flex justify-center py-12"
       >
-        {/* Glow effect */}
+        {/* Multiple glow layers for depth */}
         <div
-          className="absolute inset-0 blur-3xl opacity-20 rounded-full"
+          className="absolute inset-0 blur-3xl opacity-30 rounded-full animate-pulse"
           style={{
-            background: `radial-gradient(circle, ${getSessionTypeColor(sessionType).color} 0%, transparent 70%)`,
+            background: `radial-gradient(circle, ${getSessionTypeColor(sessionType).color} 0%, transparent 60%)`,
+          }}
+        />
+        <div
+          className="absolute inset-0 blur-2xl opacity-20 rounded-full"
+          style={{
+            background: `radial-gradient(circle, ${getSessionTypeColor(sessionType).color} 0%, transparent 80%)`,
           }}
         />
 
-        {/* Progress ring */}
+        {/* Enhanced Progress Ring */}
         <div className="relative">
-          <svg className="absolute inset-0 -rotate-90" width="100%" height="100%" viewBox="0 0 400 400">
+          <svg className="absolute inset-0 -rotate-90 drop-shadow-2xl" width="100%" height="100%" viewBox="0 0 480 480">
+            {/* Background ring */}
             <circle
-              cx="200"
-              cy="200"
-              r="190"
+              cx="240"
+              cy="240"
+              r="220"
               fill="none"
-              stroke="currentColor"
-              strokeWidth="8"
-              className="text-muted/20"
+              stroke="rgba(255,255,255,0.1)"
+              strokeWidth="12"
+              className="drop-shadow-lg"
             />
-            <circle
-              cx="200"
-              cy="200"
-              r="190"
+            {/* Progress ring */}
+            <motion.circle
+              cx="240"
+              cy="240"
+              r="220"
               fill="none"
               stroke={getSessionTypeColor(sessionType).color}
-              strokeWidth="8"
+              strokeWidth="12"
               strokeLinecap="round"
-              strokeDasharray={`${2 * Math.PI * 190}`}
-              strokeDashoffset={`${2 * Math.PI * 190 * (1 - timeLeft / getDurationForSessionType(sessionType, settings))}`}
+              strokeDasharray={`${2 * Math.PI * 220}`}
+              strokeDashoffset={`${2 * Math.PI * 220 * (1 - timeLeft / getDurationForSessionType(sessionType, settings))}`}
               className="transition-all duration-1000 ease-linear"
               style={{
-                filter: `drop-shadow(0 0 8px ${getSessionTypeColor(sessionType).color}40)`,
+                filter: `drop-shadow(0 0 20px ${getSessionTypeColor(sessionType).color}) drop-shadow(0 0 40px ${getSessionTypeColor(sessionType).color}40)`,
               }}
+              animate={{
+                filter: timerState === 'running' 
+                  ? `drop-shadow(0 0 25px ${getSessionTypeColor(sessionType).color}) drop-shadow(0 0 50px ${getSessionTypeColor(sessionType).color}60)`
+                  : `drop-shadow(0 0 15px ${getSessionTypeColor(sessionType).color}) drop-shadow(0 0 30px ${getSessionTypeColor(sessionType).color}30)`
+              }}
+              transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+            />
+            {/* Inner decorative ring */}
+            <circle
+              cx="240"
+              cy="240"
+              r="200"
+              fill="none"
+              stroke="rgba(255,255,255,0.05)"
+              strokeWidth="2"
             />
           </svg>
 
-          <FlipClock timeLeft={timeLeft} isRunning={timerState === "running"} />
+          {/* Timer Clock in Center */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <FlipClock timeLeft={timeLeft} isRunning={timerState === "running"} />
+          </div>
         </div>
       </motion.div>
 
-      {/* Timer Controls - Enhanced Buttons */}
+      {/* Timer Controls - Modern Button Design */}
       <motion.div
-        initial={{ y: 20, opacity: 0 }}
+        initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="flex items-center justify-center gap-4 flex-wrap"
+        transition={{ delay: 1.2, duration: 0.8 }}
+        className="flex items-center justify-center gap-6 flex-wrap"
       >
-        <Button
+        <motion.button
           onClick={handleStartPause}
-          size="lg"
-          className="relative group overflow-hidden px-8 py-6 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+          className="btn-gradient relative group overflow-hidden px-12 py-6 text-xl font-bold shadow-2xl transition-all duration-500 hover:scale-110"
           style={{
-            background: `linear-gradient(135deg, ${getSessionTypeColor(sessionType).color}, ${getSessionTypeColor(sessionType).color}dd)`,
-            color: "white",
+            background: `linear-gradient(135deg, ${getSessionTypeColor(sessionType).color}, ${getSessionTypeColor(sessionType).color}cc)`,
+            borderRadius: '24px',
           }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <span className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
-          <span className="relative flex items-center">
-            {timerState === "running" ? (
-              <>
-                <Pause className="w-5 h-5 mr-2" />
-                Pause
-              </>
-            ) : (
-              <>
-                <Play className="w-5 h-5 mr-2" />
-                Start
-              </>
-            )}
-          </span>
-        </Button>
+          <span className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
+          <motion.span 
+            className="relative flex items-center text-white"
+            initial={false}
+            animate={{ x: 0 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <motion.div
+              initial={false}
+              animate={{ rotate: timerState === "running" ? 0 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {timerState === "running" ? (
+                <Pause className="w-6 h-6 mr-3" />
+              ) : (
+                <Play className="w-6 h-6 mr-3" />
+              )}
+            </motion.div>
+            {timerState === "running" ? "Pause" : "Start"}
+          </motion.span>
+        </motion.button>
 
-        <Button
+        <motion.button
           onClick={handleReset}
-          variant="outline"
-          size="lg"
-          className="px-6 py-6 border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl font-semibold bg-transparent"
+          className="glass-card px-8 py-6 border-2 border-white/20 hover:bg-white/10 transition-all duration-500 hover:scale-105 shadow-xl font-bold text-white text-lg rounded-2xl group"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <RotateCcw className="w-5 h-5 mr-2" />
-          Reset
-        </Button>
+          <span className="flex items-center">
+            <motion.div
+              whileHover={{ rotate: -180 }}
+              transition={{ duration: 0.5 }}
+            >
+              <RotateCcw className="w-6 h-6 mr-3" />
+            </motion.div>
+            Reset
+          </span>
+        </motion.button>
 
-        <Button
+        <motion.button
           onClick={handleSkip}
-          variant="outline"
-          size="lg"
-          className="px-6 py-6 border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl font-semibold bg-transparent"
+          className="glass-card px-8 py-6 border-2 border-white/20 hover:bg-white/10 transition-all duration-500 hover:scale-105 shadow-xl font-bold text-white text-lg rounded-2xl group"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <SkipForward className="w-5 h-5 mr-2" />
-          Skip
-        </Button>
+          <span className="flex items-center">
+            <motion.div
+              whileHover={{ x: 5 }}
+              transition={{ duration: 0.3 }}
+            >
+              <SkipForward className="w-6 h-6 mr-3" />
+            </motion.div>
+            Skip
+          </span>
+        </motion.button>
       </motion.div>
 
-      {/* Session Progress Indicator */}
+      {/* Session Progress Indicator - Modern Design */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="flex items-center justify-center space-x-2 pt-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.4, duration: 0.6 }}
+        className="flex items-center justify-center space-x-3 pt-8"
       >
+        <motion.p 
+          className="text-white/60 text-sm font-medium mr-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.6 }}
+        >
+          Session Progress
+        </motion.p>
         {[...Array(settings.timer.longBreakInterval)].map((_, i) => (
-          <div
+          <motion.div
             key={i}
-            className={`h-3 rounded-full transition-all duration-300 ${
-              i < completedPomodoros % settings.timer.longBreakInterval ? "w-12 shadow-lg" : "w-3"
-            }`}
+            className={`progress-dot ${i < completedPomodoros % settings.timer.longBreakInterval ? 'active' : ''}`}
             style={{
-              backgroundColor:
-                i < completedPomodoros % settings.timer.longBreakInterval
-                  ? getSessionTypeColor(sessionType).color
-                  : "rgb(229 231 235)",
-              boxShadow:
-                i < completedPomodoros % settings.timer.longBreakInterval
-                  ? `0 4px 12px ${getSessionTypeColor(sessionType).color}40`
-                  : "none",
+              backgroundColor: i < completedPomodoros % settings.timer.longBreakInterval
+                ? getSessionTypeColor(sessionType).color
+                : "rgba(255,255,255,0.2)",
+              boxShadow: i < completedPomodoros % settings.timer.longBreakInterval
+                ? `0 4px 20px ${getSessionTypeColor(sessionType).color}60, 0 0 0 2px ${getSessionTypeColor(sessionType).color}40`
+                : "none",
             }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ 
+              delay: 1.6 + i * 0.1, 
+              type: "spring", 
+              stiffness: 300,
+              damping: 20 
+            }}
+            whileHover={{ scale: 1.2 }}
           />
         ))}
       </motion.div>
